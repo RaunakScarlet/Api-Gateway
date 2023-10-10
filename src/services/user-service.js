@@ -1,9 +1,7 @@
 const { StatusCodes } = require('http-status-codes');
-const { UserRepository } = require('../repositiries');
+const { UserRepository } = require('../repositories');
 const AppError = require('../utils/errors/app-error');
-const {Auth}=require('../utils/common')
-const bcrypt= require('bcrypt')
-
+const { Auth } = require('../utils/common');
 const userRepo = new UserRepository();
 
 async function create(data) {
@@ -26,32 +24,24 @@ async function create(data) {
 async function signin(data) {
     try {
         const user = await userRepo.getUserByEmail(data.email);
-        if (!user) {
-            throw new AppError('No user found for the given email', StatusCodes.NOT_FOUND)
+        if(!user) {
+            throw new AppError('No user found for the given email', StatusCodes.NOT_FOUND);
         }
         const passwordMatch = Auth.checkPassword(data.password, user.password);
-        if (!passwordMatch) {
-            throw new AppError('No user found for the given email', StatusCodes.NOT_FOUND);
-         }
-
-    } catch (error) {
-        throw error;
-    }
-}
-
-async function checkPassword(plainPassword, encryptedPassword) {
-    try {
-        return bcrypt.compare(plainPassword, encryptedPassword)
-    } catch (error) {
+        console.log("password match", passwordMatch)
+        if(!passwordMatch) {
+            throw new AppError('Invalid password', StatusCodes.BAD_REQUEST);
+        }
+        const jwt = Auth.createToken({id: user.id, email: user.email});
+        return jwt;
+    } catch(error) {
+        if(error instanceof AppError) throw error;
         console.log(error);
-
-        throw error;
+        throw new AppError('Something went wrong', StatusCodes.INTERNAL_SERVER_ERROR);
     }
 }
-
-async function createToken(){}
 
 module.exports = {
     create,
-    createToken
+    signin
 }

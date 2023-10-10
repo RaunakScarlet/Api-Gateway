@@ -1,7 +1,8 @@
 const success = {
     success: true,
-    message: ' successfully completed the request',
+    message: 'Successfully completed the request',
     data: {},
     error: {}
 }
+
 module.exports = success;
