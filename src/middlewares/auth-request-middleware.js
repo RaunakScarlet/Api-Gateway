@@ -3,7 +3,15 @@ const { Errorresponse } = require('../utils/common')
 const AppError = require('../utils/errors/app-error')
 const { UserService } = require('../services');
 
-
+async function isAdmin(req, res, next) {
+    const response = await UserService.isAdmin(req.user);
+    if(!response) {
+        return res
+                .status(StatusCodes.UNAUTHORIZED)
+                .json({message: 'User not authorized for this action'});
+    }
+    next();
+}
 
 async function checkAuth(req, res, next) {
     try {
@@ -42,5 +50,6 @@ function validateAuthRequest(req, res, next) {
 }
 module.exports = {
     validateAuthRequest,
-    checkAuth
+    checkAuth,
+    isAdmin
 }
